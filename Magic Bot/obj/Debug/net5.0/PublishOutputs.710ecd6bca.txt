@@ -1,0 +1,19 @@
+D:\mbBuild\token
+D:\mbBuild\Magic Bot.exe
+D:\mbBuild\Magic Bot.dll
+D:\mbBuild\Magic Bot.deps.json
+D:\mbBuild\Magic Bot.runtimeconfig.json
+D:\mbBuild\Magic Bot.pdb
+D:\mbBuild\Discord.Net.Commands.dll
+D:\mbBuild\Discord.Net.Core.dll
+D:\mbBuild\Discord.Net.Interactions.dll
+D:\mbBuild\Discord.Net.Rest.dll
+D:\mbBuild\Discord.Net.Webhook.dll
+D:\mbBuild\Discord.Net.WebSocket.dll
+D:\mbBuild\System.Net.Http.Formatting.dll
+D:\mbBuild\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+D:\mbBuild\Newtonsoft.Json.dll
+D:\mbBuild\Newtonsoft.Json.Bson.dll
+D:\mbBuild\System.Interactive.Async.dll
+D:\mbBuild\System.Linq.Async.dll
+D:\mbBuild\System.Reactive.dll
