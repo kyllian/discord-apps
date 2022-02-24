@@ -12,8 +12,9 @@ namespace MagicBot
 {
     class CommandHandler
     {
-        private readonly DiscordSocketClient _client;
-        private readonly CommandService _command;
+        readonly DiscordSocketClient _client;
+        readonly CommandService _command;
+
         public CommandHandler(DiscordSocketClient client, CommandService commands)
         {
             this._client = client;
@@ -21,12 +22,13 @@ namespace MagicBot
 
             this._client.MessageReceived += this.HandleCommandAsync;
         }
-        private async Task HandleCommandAsync(SocketMessage messageParam)
+
+        async Task HandleCommandAsync(SocketMessage messageParam)
         {
             var message = messageParam as SocketUserMessage;
             var messageContent = message.Content;
 
-            if(message.Author.IsBot) { return; }
+            if (message.Author.IsBot) { return; }
             var context = new SocketCommandContext(this._client, message);
 
             //if (messageContent.StartsWith("/oracle")) await this.OracleCommand(messageContent, context);
@@ -34,7 +36,7 @@ namespace MagicBot
             if (messageContent.StartsWith("/help")) await HelpCommand(messageContent, context);
         }
 
-        private static async Task HelpCommand(string messageContent, SocketCommandContext context)
+        static async Task HelpCommand(string messageContent, SocketCommandContext context)
         {
             var msg = @"[cardname] anywhere in your message will pull up an image of cardname
 /oracle <card> will return the oracle text of <card>, where <card> is the name of the card
@@ -42,7 +44,7 @@ namespace MagicBot
             await context.Channel.SendMessageAsync(msg);
         }
 
-        //private async Task RulingsCommand(string messageContent, SocketCommandContext context)
+        // async Task RulingsCommand(string messageContent, SocketCommandContext context)
         //{
         //    var name = messageContent.Replace("/rulings ", "");
         //    var response = await APICall.GetCardAsync(name.Replace(" ", "+"));
@@ -62,7 +64,7 @@ namespace MagicBot
         //        await context.Channel.SendMessageAsync(msg.Replace("12:00:00 AM", ""));
         //    }
         //}
-        //private async Task OracleCommand(string messageContent, SocketCommandContext context)
+        // async Task OracleCommand(string messageContent, SocketCommandContext context)
         //{
 
         //    var name = messageContent.Replace("/oracle ", "");
