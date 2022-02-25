@@ -5,10 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MagicBot.Models
+namespace TheFiremind.Models;
+
+class RulingsList
 {
-    class RulingsList
-    {
-        public Ruling[] Rulings { get; set; }
-    }
+    public Ruling[] Rulings { get; set; } = default!;
 }

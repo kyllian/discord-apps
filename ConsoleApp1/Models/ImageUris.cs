@@ -5,12 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MagicBot.Models
+namespace TheFiremind.Models;
+
+class ImageUris
 {
-    class ImageUris
-    {
-        public string Png { get; set; }
-        public string BorderCrop { get; set; }
-        public string Normal { get; set; }
-    }
+    public string Png { get; set; } = default!;
+    public string BorderCrop { get; set; } = default!;
+    public string Normal { get; set; } = default!;
 }

@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Magic Bot", "Magic Bot\Magic Bot.csproj", "{054C87B2-A155-4A56-947E-B149F421D512}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MagicBot", "ConsoleApp1\MagicBot.csproj", "{66ECCE74-7EE0-436A-8E17-A14AE13AC879}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheFiremind", "ConsoleApp1\TheFiremind.csproj", "{66ECCE74-7EE0-436A-8E17-A14AE13AC879}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

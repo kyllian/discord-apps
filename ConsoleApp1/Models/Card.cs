@@ -5,15 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MagicBot.Models
+namespace TheFiremind.Models;
+
+class Card
 {
-    class Card
-    {
-        public string Name { get; set; }
-        public double Cmc { get; set; }
-        public ImageUris Uri { get; set; }
-        public string OracleText { get; set; }
-        public string RulingsUri { get; set; }
-        public string Mana { get; set; }
-    }
+    public string Name { get; set; } = default!;
+    public double Cmc { get; set; }
+    public ImageUris Uri { get; set; } = default!;
+    public string OracleText { get; set; } = default!;
+    public string RulingsUri { get; set; } = default!;
+    public string Mana { get; set; } = default!;
 }
