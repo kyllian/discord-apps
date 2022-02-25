@@ -6,7 +6,10 @@ using Discord.Interactions;
 using Serilog;
 using Microsoft.Extensions.Configuration;
 using Serilog.Extensions.Hosting;
-using Microsoft.Extensions.Configuration.EnvironmentVariables;
+using TheFiremind.Options;
+using Microsoft.Extensions.Options;
+using System.Reflection;
+using TheFiremind.Modules;
 
 ReloadableLogger logger;
 
@@ -28,14 +31,10 @@ IHost host;
 try
 {
     host = Host.CreateDefaultBuilder(args)
-        .ConfigureAppConfiguration(configuration => configuration.AddEnvironmentVariables())
         .ConfigureServices((context, services) =>
             services.AddSingleton<DiscordSocketClient>()
                 .AddSingleton(p => new InteractionService(p.GetRequiredService<DiscordSocketClient>(), new() { DefaultRunMode = RunMode.Async })))
-        .UseSerilog((context, services, configuration) =>
-            configuration
-                .ReadFrom.Configuration(context.Configuration)
-                .WriteTo.Console())
+        .UseSerilog((context, services, configuration) => configuration.ReadFrom.Configuration(context.Configuration))
         .Build();
 }
 catch (Exception ex)
@@ -48,12 +47,16 @@ catch (Exception ex)
 using var scope = host.Services.CreateAsyncScope();
 var provider = scope.ServiceProvider;
 
-var configuration = provider.GetRequiredService<EnvironmentVariablesConfigurationProvider>();
+var configuration = provider.GetRequiredService<IConfiguration>();
 
 string token;
-if (!configuration.TryGet("TheFiremindDiscordAuthToken", out token))
+try
 {
-    Log.Fatal("Authorization error: Found no token in environment variable %TheFiremindDiscordAuthToken% and cannot connect to Discord");
+    token = configuration.GetValue<string>("TheFiremindDiscordAuthToken");
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Authorization error: Failed to get environment variable %TheFiremindDiscordAuthToken% and cannot connect to Discord");
     await host.WaitForShutdownAsync();
     return;
 }
@@ -68,7 +71,7 @@ client.Log += message =>
             Log.Fatal(message.Exception, $"Critical DiscordSocketClient Service Error - Source: {message.Source}; {message.Message}");
             break;
         case global::Discord.LogSeverity.Error:
-            Log.Fatal(message.Exception, $"DiscordSocketClient Service Error - Source: {message.Source}; {message.Message}");  
+            Log.Fatal(message.Exception, $"DiscordSocketClient Service Error - Source: {message.Source}; {message.Message}");
             break;
         case global::Discord.LogSeverity.Warning:
             Log.Fatal(message.Exception, $"DiscordSocketClient Service Warning - Source: {message.Source}; {message.Message}");
@@ -89,6 +92,9 @@ client.Log += message =>
     return Task.CompletedTask;
 };
 
+var interactionService = provider.GetRequiredService<InteractionService>();
+await interactionService.AddModuleAsync<ClientModule>(provider);
+
 try
 {
     await client.LoginAsync(TokenType.Bot, token);
@@ -97,7 +103,6 @@ catch (Exception ex)
 {
     Log.Fatal(ex, "Failed to connect to Discord");
     await host.WaitForShutdownAsync();
-    return;
 }
 
 try
@@ -105,31 +110,9 @@ try
     await client.StartAsync();
 }
 catch (Exception ex)
-{   
+{
     Log.Fatal(ex, "Failed to start the DiscordSocketClient");
     await host.WaitForShutdownAsync();
-    return;
-}
-
-try
-{
-    var interactionService = provider.GetRequiredService<InteractionService>();
-    var environment = provider.GetRequiredService<IHostEnvironment>();
-
-    if (environment.IsDevelopment())
-    {
-        await interactionService.RegisterCommandsToGuildAsync(234);
-    }
-    else
-    {
-        await interactionService.RegisterCommandsGloballyAsync();
-    }
-}
-catch (Exception ex)
-{
-    Log.Fatal(ex, "Failed to register commands");
-    await host.WaitForShutdownAsync();
-    return;
 }
 
 try

@@ -6,7 +6,7 @@ namespace TheFiremind.Modules
     /// <summary>
     /// Module facilitating a help command
     /// </summary>
-    public class HelpModule: InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
+    public class HelpModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
     {
         /// <summary>
         /// Responds with directions on how to use the bot
