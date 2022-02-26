@@ -2,11 +2,6 @@
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using RestSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TheFiremind.Models;
 
 namespace TheFiremind.Modules
@@ -40,16 +35,16 @@ namespace TheFiremind.Modules
         /// 
         /// </summary>
         [SlashCommand("rules", "")]
-        public async void RulesAsync(string cardName)
+        public void Rules(string cardName)
         {
             if (this._interactionContext.User.IsBot)
             {
                 return;
             }
 
-            RestRequest request = new()
-
-            var card = this._restClient.GetAsync<Card>()
+            RestRequest request = new();
+            throw new NotImplementedException();
+            //var card = this._restClient.GetAsync<Card>()
         }
     }
 }

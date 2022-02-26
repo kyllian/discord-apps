@@ -1,26 +1,18 @@
 ﻿using Discord;
+using Discord.Interactions;
 using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Discord.Interactions;
 using Serilog;
-using Microsoft.Extensions.Configuration;
 using Serilog.Extensions.Hosting;
-using Microsoft.Extensions.Configuration.EnvironmentVariables;
-using RestSharp;
-using TheFiremind.Options;
-using Microsoft.Extensions.Options;
-using System.Reflection;
 using TheFiremind.Modules;
 
 ReloadableLogger logger;
 
 try
 {
-    logger = new LoggerConfiguration()
-        //.WriteTo.File("")
-        .CreateBootstrapLogger();
-
+    logger = new LoggerConfiguration().CreateBootstrapLogger();
     Log.Logger = logger;
 }
 catch (Exception ex)
