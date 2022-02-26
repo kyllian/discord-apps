@@ -1,22 +1,21 @@
 ﻿using Discord.Interactions;
 using Discord.WebSocket;
 
-namespace TheFiremind.Modules
+namespace TheFiremind.Modules;
+
+/// <summary>
+/// Module facilitating a help command
+/// </summary>
+public class HelpModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
 {
     /// <summary>
-    /// Module facilitating a help command
+    /// Responds with directions on how to use the bot
     /// </summary>
-    public class HelpModule : InteractionModuleBase<SocketInteractionContext<SocketSlashCommand>>
+    [SlashCommand("help", "")]
+    public async void HelpAsync()
     {
-        /// <summary>
-        /// Responds with directions on how to use the bot
-        /// </summary>
-        [SlashCommand("help", "")]
-        public async void HelpAsync()
-        {
-            await this.RespondAsync(@"[cardname] anywhere in your message will pull up an image of cardname
+        await this.RespondAsync(@"[cardname] anywhere in your message will pull up an image of cardname
 /oracle <card> will return the oracle text of <card>, where <card> is the name of the card
 /rulings <card> will return all rulings, their source, and the date they went into effect");
-        }
     }
 }
