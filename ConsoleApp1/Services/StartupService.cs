@@ -1,36 +1,38 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace TheFiremind.Modules;
+namespace TheFiremind.Services;
 
-/// <summary>
-/// 
-/// </summary>
-public class ClientModule : InteractionModuleBase
+class StartupService
 {
     readonly DiscordSocketClient _client;
     readonly InteractionService _interactionService;
     readonly IHostEnvironment _environment;
+    readonly IServiceProvider _services;
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="client"></param>
-    /// <param name="interactionService"></param>
-    /// <param name="environment"></param>
-    public ClientModule(DiscordSocketClient client, InteractionService interactionService, IHostEnvironment environment)
+    string AuthToken => Configuration.GetValue<string>("TheFiremindDiscordAuthToken");
+
+    internal IConfiguration Configuration { get; }
+
+    public StartupService(DiscordSocketClient client, InteractionService interactionService, IHostEnvironment environment, IServiceProvider services, IConfiguration configuration)
     {
         _client = client;
         _interactionService = interactionService;
         _environment = environment;
-
-        RegisterHandlers();
+        _services = services;
+        Configuration = configuration;
     }
 
-    void RegisterHandlers()
+    internal void RegisterSocketClientEventHandlers()
     {
         _client.Log += message =>
         {
@@ -87,5 +89,16 @@ public class ClientModule : InteractionModuleBase
             Log.Information("Finished downloading guild data");
             return Task.CompletedTask;
         };
+    }
+
+    internal async Task LoadModulesAsync() => await _interactionService.AddModuleAsync<CommandModule>(_services);
+
+    internal async Task ConnectToDiscordAsync()
+    {
+        Log.Debug("Logging in to Discord...");
+        await _client.LoginAsync(TokenType.Bot, AuthToken);
+
+        Log.Debug("Opening the socket connection to Discord...");
+        await _client.StartAsync();
     }
 }

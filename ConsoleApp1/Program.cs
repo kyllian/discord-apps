@@ -7,8 +7,8 @@ using Microsoft.Extensions.Hosting;
 using RestSharp;
 using Serilog;
 using Serilog.Extensions.Hosting;
+using System.Reflection;
 using TheFiremind;
-using TheFiremind.Modules;
 using TheFiremind.Services;
 
 ReloadableLogger logger;
@@ -17,10 +17,14 @@ try
 {
     logger = new LoggerConfiguration().CreateBootstrapLogger();
     Log.Logger = logger;
+
+    Log.Debug("Created bootstrap logger");
 }
 catch (Exception ex)
 {
-    Log.Error(ex, "Failed to instantiate a bootstrap logger with the intended configuration");
+    Log.Fatal(ex, "Failed to instantiate a bootstrap logger with the intended configuration");
+    await Task.Delay(-1);
+    return;
 }
 
 IHost host;
@@ -28,14 +32,17 @@ IHost host;
 try
 {
     host = Host.CreateDefaultBuilder(args)
-        .UseSerilog((context, services, configuration) => configuration.ReadFrom.Configuration(context.Configuration))
+        .UseSerilog()
         .ConfigureServices((context, services) =>
             services.AddSingleton<DiscordSocketClient>()
                 .AddSingleton(p => new InteractionService(p.GetRequiredService<DiscordSocketClient>(), new() { DefaultRunMode = RunMode.Async }))
-                .AddTransient<ScryfallClient>()
                 .AddOptions()
-                .Configure<SettingsOptions>(context.Configuration.GetSection(nameof(SettingsOptions))))
+                .Configure<SettingsOptions>(context.Configuration.GetSection(nameof(SettingsOptions)))
+                .AddTransient<ScryfallClient>()
+                .AddSingleton<StartupService>())
         .Build();
+
+    Log.Debug("Built application host");
 }
 catch (Exception ex)
 {
@@ -47,52 +54,14 @@ catch (Exception ex)
 using var scope = host.Services.CreateAsyncScope();
 var provider = scope.ServiceProvider;
 
-var configuration = provider.GetRequiredService<IConfiguration>();
+Log.Debug("Created an application scope for the startup routine");
 
-string token;
+var startup = provider.GetRequiredService<StartupService>();
+logger.Reload(loggerConfiguration => loggerConfiguration.ReadFrom.Configuration(startup.Configuration));
+Log.Debug("Reloaded the logger with appSettings configuration");
 
-try
-{
-    token = configuration.GetValue<string>("TheFiremindDiscordAuthToken");
-}
-catch (Exception ex)
-{
-    Log.Fatal(ex, "Authorization error: Failed to get environment variable %TheFiremindDiscordAuthToken% and cannot connect to Discord");
-    await host.WaitForShutdownAsync();
-    return;
-}
+startup.RegisterSocketClientEventHandlers();
+await startup.LoadModulesAsync();
+await startup.ConnectToDiscordAsync();
 
-var client = provider.GetRequiredService<DiscordSocketClient>();
-
-var interactionService = provider.GetRequiredService<InteractionService>();
-await interactionService.AddModuleAsync<ClientModule>(provider);
-
-try
-{
-    await client.LoginAsync(TokenType.Bot, token);
-}
-catch (Exception ex)
-{
-    Log.Fatal(ex, "Failed to connect to Discord");
-    await host.WaitForShutdownAsync();
-}
-
-try
-{
-    await client.StartAsync();
-}
-catch (Exception ex)
-{
-    Log.Fatal(ex, "Failed to start the DiscordSocketClient");
-    await host.WaitForShutdownAsync();
-}
-
-try
-{
-    host.Run();
-}
-catch (Exception ex)
-{
-    Log.Fatal(ex, "Fatal error while application was running");
-    await host.WaitForShutdownAsync();
-}
+host.Run();
