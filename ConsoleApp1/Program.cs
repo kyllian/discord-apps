@@ -6,6 +6,8 @@ using Discord.Interactions;
 using Serilog;
 using Microsoft.Extensions.Configuration;
 using Serilog.Extensions.Hosting;
+using Microsoft.Extensions.Configuration.EnvironmentVariables;
+using RestSharp;
 using TheFiremind.Options;
 using Microsoft.Extensions.Options;
 using System.Reflection;
