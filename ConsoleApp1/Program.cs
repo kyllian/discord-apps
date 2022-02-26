@@ -7,6 +7,7 @@ using Serilog;
 using Microsoft.Extensions.Configuration;
 using Serilog.Extensions.Hosting;
 using Microsoft.Extensions.Configuration.EnvironmentVariables;
+using RestSharp;
 
 ReloadableLogger logger;
 
@@ -31,11 +32,13 @@ try
         .ConfigureAppConfiguration(configuration => configuration.AddEnvironmentVariables())
         .ConfigureServices((context, services) =>
             services.AddSingleton<DiscordSocketClient>()
-                .AddSingleton(p => new InteractionService(p.GetRequiredService<DiscordSocketClient>(), new() { DefaultRunMode = RunMode.Async })))
+                .AddSingleton(p => new InteractionService(p.GetRequiredService<DiscordSocketClient>(), new() { DefaultRunMode = RunMode.Async }))
+                .AddTransient<RestClient>())
         .UseSerilog((context, services, configuration) =>
             configuration
                 .ReadFrom.Configuration(context.Configuration)
                 .WriteTo.Console())
+        
         .Build();
 }
 catch (Exception ex)
