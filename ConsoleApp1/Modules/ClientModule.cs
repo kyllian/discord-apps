@@ -1,4 +1,5 @@
-﻿using Discord.Interactions;
+﻿using Discord;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -10,6 +11,10 @@ namespace TheFiremind.Modules;
 /// </summary>
 public class ClientModule : InteractionModuleBase
 {
+    readonly DiscordSocketClient _client;
+    readonly InteractionService _interactionService;
+    readonly IHostEnvironment _environment;
+
     /// <summary>
     /// 
     /// </summary>
@@ -18,13 +23,51 @@ public class ClientModule : InteractionModuleBase
     /// <param name="environment"></param>
     public ClientModule(DiscordSocketClient client, InteractionService interactionService, IHostEnvironment environment)
     {
-        client.GuildAvailable += async guild =>
+        _client = client;
+        _interactionService = interactionService;
+        _environment = environment;
+
+        RegisterHandlers();
+    }
+
+    void RegisterHandlers()
+    {
+        _client.Log += message =>
+        {
+            switch (message.Severity)
+            {
+                case LogSeverity.Critical:
+                    Log.Fatal(message.Exception, $"{nameof(LogSeverity.Critical)} {nameof(DiscordSocketClient)} Service Error - {message.Source}; {message.Message}");
+                    break;
+                case LogSeverity.Error:
+                    Log.Fatal(message.Exception, $"{nameof(DiscordSocketClient)} Service {nameof(LogSeverity.Error)} - {message.Source}; {message.Message}");
+                    break;
+                case LogSeverity.Warning:
+                    Log.Fatal(message.Exception, $"{nameof(DiscordSocketClient)} Service {nameof(LogSeverity.Warning)} - {message.Source}; {message.Message}");
+                    break;
+                case LogSeverity.Info:
+                    Log.Information($"{nameof(DiscordSocketClient)} - {message.Source}; {message.Message}");
+                    break;
+                case LogSeverity.Verbose:
+                    Log.Verbose($"{nameof(DiscordSocketClient)} - {message.Source}; {message.Message}");
+                    break;
+                case LogSeverity.Debug:
+                    Log.Debug($"{nameof(DiscordSocketClient)} - {message.Source}; {message.Message}");
+                    break;
+                default:
+                    break;
+            }
+
+            return Task.CompletedTask;
+        };
+
+        _client.GuildAvailable += async guild =>
         {
             try
             {
-                if (environment.IsDevelopment())
+                if (_environment.IsDevelopment())
                 {
-                    await interactionService.RegisterCommandsToGuildAsync(guild.Id);
+                    await _interactionService.RegisterCommandsToGuildAsync(guild.Id);
                 }
             }
             catch (Exception ex)
@@ -33,13 +76,13 @@ public class ClientModule : InteractionModuleBase
             }
         };
 
-        client.Connected += () =>
+        _client.Connected += () =>
         {
             Log.Information("Connected to Discord");
             return Task.CompletedTask;
         };
 
-        client.Ready += () =>
+        _client.Ready += () =>
         {
             Log.Information("Finished downloading guild data");
             return Task.CompletedTask;

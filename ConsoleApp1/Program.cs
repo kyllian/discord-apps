@@ -4,9 +4,12 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using RestSharp;
 using Serilog;
 using Serilog.Extensions.Hosting;
+using TheFiremind;
 using TheFiremind.Modules;
+using TheFiremind.Services;
 
 ReloadableLogger logger;
 
@@ -25,10 +28,13 @@ IHost host;
 try
 {
     host = Host.CreateDefaultBuilder(args)
+        .UseSerilog((context, services, configuration) => configuration.ReadFrom.Configuration(context.Configuration))
         .ConfigureServices((context, services) =>
             services.AddSingleton<DiscordSocketClient>()
-                .AddSingleton(p => new InteractionService(p.GetRequiredService<DiscordSocketClient>(), new() { DefaultRunMode = RunMode.Async })))
-        .UseSerilog((context, services, configuration) => configuration.ReadFrom.Configuration(context.Configuration))
+                .AddSingleton(p => new InteractionService(p.GetRequiredService<DiscordSocketClient>(), new() { DefaultRunMode = RunMode.Async }))
+                .AddTransient<ScryfallClient>()
+                .AddOptions()
+                .Configure<SettingsOptions>(context.Configuration.GetSection(nameof(SettingsOptions))))
         .Build();
 }
 catch (Exception ex)
@@ -44,6 +50,7 @@ var provider = scope.ServiceProvider;
 var configuration = provider.GetRequiredService<IConfiguration>();
 
 string token;
+
 try
 {
     token = configuration.GetValue<string>("TheFiremindDiscordAuthToken");
@@ -56,35 +63,6 @@ catch (Exception ex)
 }
 
 var client = provider.GetRequiredService<DiscordSocketClient>();
-
-client.Log += message =>
-{
-    switch (message.Severity)
-    {
-        case global::Discord.LogSeverity.Critical:
-            Log.Fatal(message.Exception, $"Critical DiscordSocketClient Service Error - Source: {message.Source}; {message.Message}");
-            break;
-        case global::Discord.LogSeverity.Error:
-            Log.Fatal(message.Exception, $"DiscordSocketClient Service Error - Source: {message.Source}; {message.Message}");
-            break;
-        case global::Discord.LogSeverity.Warning:
-            Log.Fatal(message.Exception, $"DiscordSocketClient Service Warning - Source: {message.Source}; {message.Message}");
-            break;
-        case global::Discord.LogSeverity.Info:
-            Log.Information($"DiscordSocketClient - Source: {message.Source}; {message.Message}");
-            break;
-        case global::Discord.LogSeverity.Verbose:
-            Log.Verbose($"DiscordSocketClient - Source: {message.Source}; {message.Message}");
-            break;
-        case global::Discord.LogSeverity.Debug:
-            Log.Debug($"DiscordSocketClient - Source: {message.Source}; {message.Message}");
-            break;
-        default:
-            break;
-    }
-
-    return Task.CompletedTask;
-};
 
 var interactionService = provider.GetRequiredService<InteractionService>();
 await interactionService.AddModuleAsync<ClientModule>(provider);
