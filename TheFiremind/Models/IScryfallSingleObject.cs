@@ -1,6 +1,6 @@
 ﻿namespace TheFiremind.Models;
 
-interface IScryfallSingleObject<T> : IScryfallError
+interface IScryfallSingleObject<T> : IScryfallError, IScryfallObject
 {
-    public T? Data { get; init; }
+    internal T? Data { get; init; }
 }

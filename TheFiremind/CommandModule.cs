@@ -1,4 +1,5 @@
 ﻿using Discord.Interactions;
+using TheFiremind.Models;
 using TheFiremind.Services;
 
 namespace TheFiremind
@@ -22,7 +23,7 @@ namespace TheFiremind
         /// <summary>
         /// Responds with directions on how to use the bot
         /// </summary>
-        [SlashCommand("help", $"Get directions on how to use {nameof(TheFiremind)} bot")]
+        [SlashCommand("h", $"Get directions on how to use {nameof(TheFiremind)} bot")]
         public async void HelpAsync()
         {
             await RespondAsync(@"[cardname] anywhere in your message will pull up an image of cardname
@@ -33,19 +34,26 @@ namespace TheFiremind
         /// <summary>
         /// 
         /// </summary>
-        [SlashCommand("rulings", "Search for a card by name and look up its rulings")]
+        [SlashCommand("r", "Search for a card by name and look up its rulings")]
         public async Task RulingsAsync(string cardName)
         {
-            var scryfallObject = await _scryfall.GetCardAsync(cardName, false);
+            ScryfallObject scryfallObject = await _scryfall.GetCardAsync(cardName, false);
 
-            if (card == null)
+            IScryfallCard card;
+            switch (scryfallObject.Object)
             {
-                await RespondAsync($"Found either zero or too many results");
-                return;
+                case "error":
+                    IScryfallError error = scryfallObject;
+                    await RespondAsync(error.Details);
+                    return;
+                default:
+                    card = scryfallObject;
+                    break;
             }
 
-            var rulings = await _scryfall.GetRulingsAsync(card.Id);
+            ScryfallSingleObject<ScryfallRuling[]> scryfallSingleObject = await _scryfall.GetRulingsAsync(card.Id!);
 
+            var rulings = scryfallSingleObject.Data!;
             var message = rulings.Select(r => $"From {r.Source}:\n{r.Comment}\nDated {r.Date:D}\n\n")
                 .Aggregate((previous, current) => previous += current);
 

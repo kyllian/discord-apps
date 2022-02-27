@@ -1,7 +1,7 @@
 ﻿namespace TheFiremind.Models;
 
-interface IScryfallCard : IScryfallError
+interface IScryfallCard : IScryfallError, IScryfallObject
 {
-    public string? Id { get; init; }
-    public string? Name { get; init; }
+    internal string? Id { get; init; }
+    internal string? Name { get; init; }
 }

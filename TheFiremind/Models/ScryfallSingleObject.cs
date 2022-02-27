@@ -7,4 +7,5 @@ class ScryfallSingleObject<T> : IScryfallSingleObject<T>
     public string? Details { get; init; }
     public int? Status { get; init; }
     public string? Type { get; init; }
+    public string Object { get; set; } = default!;
 }

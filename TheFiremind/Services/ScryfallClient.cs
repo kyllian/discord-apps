@@ -31,13 +31,18 @@ public class ScryfallClient
     internal async Task<ScryfallObject> GetCardAsync(string name, bool exact = true)
     {
         var request = CardRequest.AddQueryParameter(exact ? "exact" : "fuzzy", name);
-        var response = await _restClient.ExecuteGetAsync<ScryfallObject>(request);
-        return response.Data!;
+        return await this.GetAsync<ScryfallObject>(request);
     }
 
-    internal async Task<ScryfallRuling[]> GetRulingsAsync(string id)
+    internal async Task<ScryfallSingleObject<ScryfallRuling[]>> GetRulingsAsync(string id)
     {
-        var o = await _restClient.GetAsync<ScryfallSingleObject<ScryfallRuling[]>>(RulingsRequest.AddUrlSegment("id", id));
-        return o!.Data!;
+        var request = RulingsRequest.AddUrlSegment("id", id);
+        return await this.GetAsync<ScryfallSingleObject<ScryfallRuling[]>>(request);
+    }
+
+    private async Task<T> GetAsync<T>(RestRequest request)
+    {
+        var response = await _restClient.ExecuteGetAsync<T>(request);
+        return response.Data!;
     }
 }
