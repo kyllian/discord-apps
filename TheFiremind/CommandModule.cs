@@ -23,8 +23,8 @@ namespace TheFiremind
         /// <summary>
         /// Responds with directions on how to use the bot
         /// </summary>
-        [SlashCommand("h", $"Get directions on how to use {nameof(TheFiremind)} bot")]
-        public async void HelpAsync()
+        [SlashCommand("help", $"Get directions on how to use {nameof(TheFiremind)} bot")]
+        public async Task HelpAsync()
         {
             await RespondAsync(@"[cardname] anywhere in your message will pull up an image of cardname
 /oracle <card> will return the oracle text of <card>, where <card> is the name of the card
@@ -34,7 +34,7 @@ namespace TheFiremind
         /// <summary>
         /// 
         /// </summary>
-        [SlashCommand("r", "Search for a card by name and look up its rulings")]
+        [SlashCommand("rulings", "Search for a card by name and look up its rulings")]
         public async Task RulingsAsync(string cardName)
         {
             ScryfallObject scryfallObject = await _scryfall.GetCardAsync(cardName, false);
