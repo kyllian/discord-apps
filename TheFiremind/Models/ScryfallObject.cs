@@ -4,6 +4,10 @@ class ScryfallObject : IScryfallObject, IScryfallCard
 {
     public string? Id { get; init; }
     public string? Name { get; init; }
+    public string? Scryfall_Uri { get; set; }
+    public ScryfallImageUris? Image_Uris { get; set; }
+    public string? Mana_Cost { get; set; }
+    public string? Oracle_Text { get; set; }
     public string? Code { get; init; }
     public string? Details { get; init; }
     public int? Status { get; init; }
