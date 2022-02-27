@@ -1,13 +1,9 @@
-﻿using Discord;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using Discord.WebSocket;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using RestSharp;
 using Serilog;
 using Serilog.Extensions.Hosting;
-using System.Reflection;
 using TheFiremind;
 using TheFiremind.Services;
 
@@ -39,6 +35,7 @@ try
                 .AddOptions()
                 .Configure<SettingsOptions>(context.Configuration.GetSection(nameof(SettingsOptions)))
                 .AddTransient<ScryfallClient>()
+                .AddTransient<CommandModule>()
                 .AddSingleton<StartupService>())
         .Build();
 

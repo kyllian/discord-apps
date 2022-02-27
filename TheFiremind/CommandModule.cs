@@ -1,17 +1,19 @@
 ﻿using Discord.Interactions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TheFiremind.Services;
 
 namespace TheFiremind
 {
-    internal class CommandModule : InteractionModuleBase
+    /// <summary>
+    /// 
+    /// </summary>
+    public class CommandModule : InteractionModuleBase<SocketInteractionContext>
     {
-    readonly ScryfallClient _scryfall;
+        readonly ScryfallClient _scryfall;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="scryfall"></param>
         public CommandModule(ScryfallClient scryfall)
         {
             _scryfall = scryfall;
@@ -34,20 +36,22 @@ namespace TheFiremind
         [SlashCommand("rulings", "Search for a card by name and look up its rulings")]
         public async Task RulingsAsync(string cardName)
         {
-            var card = await _scryfall.GetCardAsync(cardName, false);
+            var scryfallObject = await _scryfall.GetCardAsync(cardName, false);
+
+            if (card == null)
+            {
+                await RespondAsync($"Found either zero or too many results");
+                return;
+            }
+
             var rulings = await _scryfall.GetRulingsAsync(card.Id);
+
+            var message = rulings.Select(r => $"From {r.Source}:\n{r.Comment}\nDated {r.Date:D}\n\n")
+                .Aggregate((previous, current) => previous += current);
 
             if (rulings.Any())
             {
-                StringBuilder builder = new();
-                foreach (var ruling in rulings)
-                {
-                    builder.AppendLine($"From {ruling.Source}:");
-                    builder.AppendLine($"{ruling.Comment}");
-                    builder.AppendLine($"Dated {ruling.Date:D}\n");
-                }
-
-                await RespondAsync(builder.ToString());
+                await RespondAsync(message);
             }
             else
             {

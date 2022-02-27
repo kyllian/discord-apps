@@ -2,10 +2,14 @@
 using RestSharp;
 using RestSharp.Serializers.Json;
 using System.Text.Json;
+using TheFiremind.Models;
 
 namespace TheFiremind.Services;
 
-class ScryfallClient
+/// <summary>
+/// 
+/// </summary>
+public class ScryfallClient
 {
     readonly RestClient _restClient;
     readonly SettingsOptions _settings;
@@ -13,6 +17,10 @@ class ScryfallClient
     RestRequest CardRequest => new(_settings.ScryfallApiCardNamedFragment);
     RestRequest RulingsRequest => new(_settings.ScryfallApiRulingsFragment);
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="settingsOptions"></param>
     public ScryfallClient(IOptions<SettingsOptions> settingsOptions)
     {
         _settings = settingsOptions.Value;
@@ -20,14 +28,16 @@ class ScryfallClient
         _restClient.UseSystemTextJson(new JsonSerializerOptions(JsonSerializerDefaults.Web));
     }
 
-    internal async Task<Card> GetCardAsync(string name, bool exact = true)
+    internal async Task<ScryfallObject> GetCardAsync(string name, bool exact = true)
     {
-        return (await _restClient.GetAsync<Card>(CardRequest.AddQueryParameter(exact ? "exact" : "fuzzy", name)))!;
+        var request = CardRequest.AddQueryParameter(exact ? "exact" : "fuzzy", name);
+        var response = await _restClient.ExecuteGetAsync<ScryfallObject>(request);
+        return response.Data!;
     }
 
-    internal async Task<Ruling[]> GetRulingsAsync(string id)
+    internal async Task<ScryfallRuling[]> GetRulingsAsync(string id)
     {
-        var o = await _restClient.GetAsync<ScryfallSingleObject<Ruling[]>>(RulingsRequest.AddUrlSegment("id", id));
-        return o!.Data;
+        var o = await _restClient.GetAsync<ScryfallSingleObject<ScryfallRuling[]>>(RulingsRequest.AddUrlSegment("id", id));
+        return o!.Data!;
     }
 }

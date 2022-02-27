@@ -4,11 +4,6 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TheFiremind.Services;
 
@@ -42,10 +37,10 @@ class StartupService
                     Log.Fatal(message.Exception, $"{nameof(LogSeverity.Critical)} {nameof(DiscordSocketClient)} Service Error - {message.Source}; {message.Message}");
                     break;
                 case LogSeverity.Error:
-                    Log.Fatal(message.Exception, $"{nameof(DiscordSocketClient)} Service {nameof(LogSeverity.Error)} - {message.Source}; {message.Message}");
+                    Log.Error(message.Exception, $"{nameof(DiscordSocketClient)} Service {nameof(LogSeverity.Error)} - {message.Source}; {message.Message}");
                     break;
                 case LogSeverity.Warning:
-                    Log.Fatal(message.Exception, $"{nameof(DiscordSocketClient)} Service {nameof(LogSeverity.Warning)} - {message.Source}; {message.Message}");
+                    Log.Warning(message.Exception, $"{nameof(DiscordSocketClient)} Service {nameof(LogSeverity.Warning)} - {message.Source}; {message.Message}");
                     break;
                 case LogSeverity.Info:
                     Log.Information($"{nameof(DiscordSocketClient)} - {message.Source}; {message.Message}");
@@ -61,6 +56,12 @@ class StartupService
             }
 
             return Task.CompletedTask;
+        };
+
+        _client.InteractionCreated += async interaction =>
+        {
+            var context = new SocketInteractionContext(_client, interaction);
+            await _interactionService.ExecuteCommandAsync(context, _services);
         };
 
         _client.GuildAvailable += async guild =>
@@ -97,8 +98,6 @@ class StartupService
     {
         Log.Debug("Logging in to Discord...");
         await _client.LoginAsync(TokenType.Bot, AuthToken);
-
-        Log.Debug("Opening the socket connection to Discord...");
         await _client.StartAsync();
     }
 }
