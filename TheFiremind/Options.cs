@@ -19,4 +19,9 @@ public class SettingsOptions
     /// 
     /// </summary>
     public string ScryfallApiRulingsFragment { get; set; } = default!;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public string ScryfallApiAutocompleteFragment { get; set; } = default!;
 }
