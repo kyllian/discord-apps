@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using RestSharp;
 using RestSharp.Serializers.Json;
+using Serilog;
 using System.Text.Json;
 using TheFiremind.Models;
 
@@ -11,6 +12,10 @@ namespace TheFiremind.Services;
 /// </summary>
 public class ScryfallClient
 {
+    private static SemaphoreSlim _pool = new(5, 5);
+    private static int _numberQueued = 0;
+    private static int _numberExecuting => 5 - _pool.CurrentCount;
+
     readonly SettingsOptions _settings;
 
     RestRequest CardRequest => new(_settings.ScryfallApiCardNamedFragment);
@@ -60,12 +65,34 @@ public class ScryfallClient
 
     private async Task<T> GetAsync<T>(RestRequest request) where T : IScryfallError
     {
-        var response = await RestClient.ExecuteGetAsync<T>(request);
-        var errorObject = response.Data!;
-        return errorObject.Object switch
+        if (_numberExecuting > 4)
         {
-            "error" => throw new Exception(errorObject.Details),
-            _ => errorObject,
-        };
+            Log.Debug($"Scryfall requests queued: {Interlocked.Increment(ref _numberQueued)}");
+        }
+
+        await _pool.WaitAsync();
+        if (_numberExecuting > 4)
+        {
+            Log.Debug($"Scryfall requests queued: {Interlocked.Decrement(ref _numberQueued)}");
+        }
+
+        Log.Debug($"Scryfall requests executing: {_numberExecuting}");
+
+        try
+        {
+            var response = await RestClient.ExecuteGetAsync<T>(request);
+            var errorObject = response.Data!;
+            await Task.Delay(200 * _numberExecuting);
+            return errorObject.Object switch
+            {
+                "error" => throw new Exception(errorObject.Details),
+                _ => errorObject,
+            };
+        }
+        finally
+        {
+            _pool.Release();
+            Log.Debug($"Scryfall requests executing: {_numberExecuting}");
+        }
     }
 }
