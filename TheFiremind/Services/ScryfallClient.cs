@@ -28,7 +28,20 @@ public class ScryfallClient
         _restClient.UseSystemTextJson(new JsonSerializerOptions(JsonSerializerDefaults.Web));
     }
 
-    internal async Task<ScryfallObject> GetCardAsync(string name, bool exact = true)
+    internal async Task<IScryfallCard> GetCardAsync(string name)
+    {
+        ScryfallObject scryfallObject = await GetCardAsync(name, false);
+
+        switch (scryfallObject.Object)
+        {
+            case "error":
+                throw new Exception(scryfallObject.Details);
+            default:
+                return scryfallObject;
+        }
+    }
+
+    internal async Task<ScryfallObject> GetCardAsync(string name, bool exact)
     {
         var request = CardRequest.AddQueryParameter(exact ? "exact" : "fuzzy", name);
         return await this.GetAsync<ScryfallObject>(request);

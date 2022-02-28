@@ -4,6 +4,9 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using System.Text;
+using System.Text.RegularExpressions;
+using TheFiremind.Models;
 
 namespace TheFiremind.Services;
 
@@ -11,6 +14,7 @@ class StartupService
 {
     readonly DiscordSocketClient _client;
     readonly InteractionService _interactionService;
+    readonly ScryfallClient _scryfall;
     readonly IHostEnvironment _environment;
     readonly IServiceProvider _services;
 
@@ -18,12 +22,14 @@ class StartupService
 
     internal IConfiguration Configuration { get; }
 
-    public StartupService(DiscordSocketClient client, InteractionService interactionService, IHostEnvironment environment, IServiceProvider services, IConfiguration configuration)
+    public StartupService(DiscordSocketClient client, InteractionService interactionService, ScryfallClient scryfallClient, IHostEnvironment environment, IServiceProvider services, IConfiguration configuration)
     {
         _client = client;
         _interactionService = interactionService;
+        _scryfall = scryfallClient;
         _environment = environment;
         _services = services;
+
         Configuration = configuration;
     }
 
@@ -79,17 +85,7 @@ class StartupService
             }
         };
 
-        _client.Connected += () =>
-        {
-            Log.Information("Connected to Discord");
-            return Task.CompletedTask;
-        };
-
-        _client.Ready += () =>
-        {
-            Log.Information("Finished downloading guild data");
-            return Task.CompletedTask;
-        };
+        _client.MessageReceived += MessageReceivedHandler;
     }
 
     internal async Task LoadModulesAsync() => await _interactionService.AddModuleAsync<CommandModule>(_services);
@@ -99,5 +95,32 @@ class StartupService
         Log.Debug("Logging in to Discord...");
         await _client.LoginAsync(TokenType.Bot, AuthToken);
         await _client.StartAsync();
+    }
+
+    private async Task MessageReceivedHandler(SocketMessage message)
+    {
+        var content = message.Content;
+        var author = message.Author;
+        if (author.IsWebhook || author.IsBot || !(content.Contains('[') && content.Contains(']'))) return;
+
+        var queries = Regex.Matches(content, "(?<=\\[)([^]]+)(?=\\])").Select(m => m.Value).Distinct().Where(c => !string.IsNullOrWhiteSpace(c));
+
+        List<Embed> embeds = new();
+        StringBuilder builder = new();
+        foreach (var query in queries)
+        {
+            IScryfallCard card;
+            try
+            {
+                card = await _scryfall.GetCardAsync(query);
+                await message.Channel.SendMessageAsync(card.Image_Uris!.Png, messageReference: new(message.Id));
+            }
+            catch (Exception ex)
+            {
+                builder.Append($"{query}: {ex.Message}\n");
+            }
+        }
+
+        await message.Channel.SendMessageAsync(builder.ToString(), messageReference: new(message.Id));
     }
 }

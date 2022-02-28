@@ -69,7 +69,7 @@ namespace TheFiremind
             IScryfallCard card;
             try
             {
-                card = await GetCardAsync(cardName);
+                card = await _scryfall.GetCardAsync(cardName);
             }
             catch (Exception ex)
             {
@@ -111,7 +111,7 @@ namespace TheFiremind
             IScryfallCard card;
             try
             {
-                card = await GetCardAsync(cardName);
+                card = await _scryfall.GetCardAsync(cardName);
             }
             catch (Exception ex)
             {
@@ -147,15 +147,15 @@ namespace TheFiremind
         /// <summary>
         /// Slash command for looking up an MTG card face
         /// </summary>
-        /// <param name="cardName"></param>
+        /// <param name="name"></param>
         /// <returns></returns>
         [SlashCommand("card", CardCommandDescription)]
-        public async Task CardAsync(string cardName)
+        public async Task CardAsync(string name)
         {
             IScryfallCard card;
             try
             {
-                card = await GetCardAsync(cardName);
+                card = await _scryfall.GetCardAsync(name);
             }
             catch (Exception ex)
             {
@@ -164,19 +164,6 @@ namespace TheFiremind
             }
 
             await RespondAsync(card.Image_Uris!.Png);
-        }
-
-        private async Task<IScryfallCard> GetCardAsync(string cardName)
-        {
-            ScryfallObject scryfallObject = await _scryfall.GetCardAsync(cardName, false);
-
-            switch (scryfallObject.Object)
-            {
-                case "error":
-                    throw new Exception(scryfallObject.Details);
-                default:
-                    return scryfallObject;
-            }
         }
     }
 }
