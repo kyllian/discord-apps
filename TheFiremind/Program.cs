@@ -6,6 +6,7 @@ using Serilog;
 using Serilog.Extensions.Hosting;
 using TheFiremind;
 using TheFiremind.Services;
+using Microsoft.Extensions.Configuration.UserSecrets;
 
 ReloadableLogger logger;
 
@@ -34,7 +35,7 @@ try
                 .AddSingleton(p => new InteractionService(p.GetRequiredService<DiscordSocketClient>(), new() { DefaultRunMode = RunMode.Async }))
                 .AddOptions()
                 .Configure<SettingsOptions>(context.Configuration.GetSection(nameof(SettingsOptions)))
-                .AddTransient<ScryfallClient>()
+                .AddSingleton<ScryfallClient>()
                 .AddTransient<CommandModule>()
                 .AddSingleton<StartupService>())
         .Build();

@@ -18,7 +18,7 @@ class StartupService
     readonly IHostEnvironment _environment;
     readonly IServiceProvider _services;
 
-    string AuthToken => Configuration.GetValue<string>("TheFiremindDiscordAuthToken");
+    string AuthToken => Configuration["TheFiremindDiscordAuthToken"];
 
     internal IConfiguration Configuration { get; }
 
