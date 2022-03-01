@@ -6,7 +6,6 @@ using Serilog;
 using Serilog.Extensions.Hosting;
 using TheFiremind;
 using TheFiremind.Services;
-using Microsoft.Extensions.Configuration.UserSecrets;
 
 ReloadableLogger logger;
 
@@ -31,13 +30,13 @@ try
     host = Host.CreateDefaultBuilder(args)
         .UseSerilog()
         .ConfigureServices((context, services) =>
-            services.AddSingleton<DiscordSocketClient>()
+            services.AddOptions()
+                .AddSingleton<DiscordSocketClient>()
                 .AddSingleton(p => new InteractionService(p.GetRequiredService<DiscordSocketClient>(), new() { DefaultRunMode = RunMode.Async }))
-                .AddOptions()
                 .Configure<SettingsOptions>(context.Configuration.GetSection(nameof(SettingsOptions)))
                 .AddSingleton<ScryfallClient>()
-                .AddTransient<CommandModule>()
-                .AddSingleton<StartupService>())
+                .AddSingleton<StartupService>()
+                .AddTransient<CommandModule>())
         .Build();
 
     Log.Debug("Built application host");

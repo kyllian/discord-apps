@@ -117,10 +117,13 @@ class StartupService
             }
             catch (Exception ex)
             {
-                builder.Append($"{query}: {ex.Message}\n");
+                builder.AppendLine($"{query}: {ex.Message}");
             }
         }
 
-        await message.Channel.SendMessageAsync(builder.ToString(), messageReference: new(message.Id));
+        if (builder.Length > 0)
+        {
+            await message.Channel.SendMessageAsync(builder.ToString(), messageReference: new(message.Id));
+        }
     }
 }
