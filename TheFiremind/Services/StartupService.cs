@@ -95,6 +95,11 @@ class StartupService
         Log.Debug("Logging in to Discord...");
         await _client.LoginAsync(TokenType.Bot, AuthToken);
         await _client.StartAsync();
+
+        if (_environment.IsProduction())
+        {
+            await _interactionService.RegisterCommandsGloballyAsync();
+        }
     }
 
     private async Task MessageReceivedHandler(SocketMessage message)
