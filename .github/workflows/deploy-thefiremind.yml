@@ -10,7 +10,7 @@ on:
     types: ['created']
 
 env:
-  REGISTRY: registry.digitalocean.com
+  REGISTRY: ghcr.io
   IMAGE_NAME: TheFiremind
 
 jobs:
