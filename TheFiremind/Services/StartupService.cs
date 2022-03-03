@@ -85,6 +85,14 @@ class StartupService
             }
         };
 
+        _client.Ready += async () =>
+        {
+            if (_environment.IsProduction())
+            {
+                await _interactionService.RegisterCommandsGloballyAsync();
+            }
+        };
+
         _client.MessageReceived += MessageReceivedHandler;
     }
 
@@ -95,11 +103,6 @@ class StartupService
         Log.Debug("Logging in to Discord...");
         await _client.LoginAsync(TokenType.Bot, AuthToken);
         await _client.StartAsync();
-
-        if (_environment.IsProduction())
-        {
-            await _interactionService.RegisterCommandsGloballyAsync();
-        }
     }
 
     private async Task MessageReceivedHandler(SocketMessage message)
