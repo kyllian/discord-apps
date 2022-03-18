@@ -114,15 +114,14 @@ class StartupService
 
         var queries = Regex.Matches(content, "(?<=\\[)([^]]+)(?=\\])").Select(m => m.Value).Distinct().Where(c => !string.IsNullOrWhiteSpace(c));
 
-        List<Embed> embeds = new();
         StringBuilder builder = new();
         foreach (var query in queries)
         {
-            IScryfallCard card;
             try
             {
-                card = await _scryfall.GetCardAsync(query);
-                await message.Channel.SendMessageAsync(card.Image_Uris!.Png, messageReference: new(message.Id));
+                var card = await _scryfall.GetCardAsync(query);
+                var embeds = card.BuildEmbeds();
+                await message.Channel.SendMessageAsync(embeds: embeds, messageReference: new(message.Id));
             }
             catch (Exception ex)
             {
