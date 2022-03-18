@@ -19,7 +19,6 @@ internal static class Extensions
     {
         List<Embed> embeds = new();
         var builder = card.GetBaseEmbedBuilder();
-
         switch (card.FaceCount)
         {
             case 1:
@@ -48,15 +47,7 @@ internal static class Extensions
                 break;
             case 2:
                 embeds.Add(builder.AddFields(card, rulings).BuildFrontFace(card));
-
-                //NOTE We must build the back face second because state is maintained in the EmbedBuilder,
-                //      and if we're not careful, rulings and/or oracle text will be duplicated across the embeds,
-                //      possibly resulting in multiple instances of the same ruling or oracle text in the combined embed
                 embeds.Add(builder.BuildBackFace(card));
-
-                //TODO Refactor the above to be more functionally safe code,
-                //      i.e. methods do not unwittingly/uninentionally modify the parent object
-
                 break;
             default:
                 break;
