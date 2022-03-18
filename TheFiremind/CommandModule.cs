@@ -101,7 +101,7 @@ public class CommandModule : InteractionModuleBase<SocketInteractionContext>
     }
 
     /// <summary>
-    /// Slash command for looking up MTG card oracle text
+    /// Slash command for looking up the MTG card oracle text
     /// </summary>
     [SlashCommand("oracle", OracleCommandDescription)]
     public async Task OracleAsync([Autocomplete(typeof(CardNameAutocompleteHandler))] string cardName)
@@ -127,14 +127,12 @@ public class CommandModule : InteractionModuleBase<SocketInteractionContext>
                 new()
                 {
                     Name = "Mana Cost",
-                    Value = card.Mana_Cost,
-                    IsInline = true
+                    Value = card.Mana_Cost
                 },
                 new()
                 {
                     Name = "Oracle Text",
-                    Value = card.Oracle_Text,
-                    IsInline = true
+                    Value = card.Oracle_Text
                 }
             }
         };
@@ -143,7 +141,7 @@ public class CommandModule : InteractionModuleBase<SocketInteractionContext>
     }
 
     /// <summary>
-    /// Slash command for looking up an MTG card face
+    /// Slash command for looking up an MTG card
     /// </summary>
     /// <param name="name"></param>
     /// <returns></returns>
@@ -161,6 +159,30 @@ public class CommandModule : InteractionModuleBase<SocketInteractionContext>
             return;
         }
 
-        await RespondAsync(card.Image_Uris!.Png);
+        List<Embed> embeds = new();
+        var builder = new EmbedBuilder()
+        {
+            Title = card.Name,
+            Url = card.Scryfall_Uri // sharing the Url between two embeds combines the embeds into one
+        };
+
+        switch (card.FaceCount)
+        {
+            case 1:
+                embeds.Add(builder.WithImageUrl(card.Image_Uris!.Png).Build());
+                break;
+            case 2:
+                var front = builder.WithImageUrl(card.Card_Faces!.First().Image_Uris!.Png).Build();
+                var back = builder.WithImageUrl(card.Card_Faces!.Last().Image_Uris!.Png).Build();
+
+                embeds.Add(front);
+                embeds.Add(back);
+
+                break;
+            default:
+                break;
+        }
+
+        await RespondAsync(embeds: embeds.ToArray());
     }
 }
