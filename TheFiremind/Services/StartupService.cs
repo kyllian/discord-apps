@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using System.Text;
 using System.Text.RegularExpressions;
+using TheFiremind.Commands;
 using TheFiremind.Models;
 
 namespace TheFiremind.Services;

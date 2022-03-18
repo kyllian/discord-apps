@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Extensions.Hosting;
 using TheFiremind;
+using TheFiremind.Commands;
 using TheFiremind.Services;
 
 ReloadableLogger logger;
