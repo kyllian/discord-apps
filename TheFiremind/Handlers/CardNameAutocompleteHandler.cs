@@ -2,7 +2,7 @@
 using Discord.Interactions;
 using TheFiremind.Services;
 
-namespace TheFiremind;
+namespace TheFiremind.Handlers;
 
 /// <summary>
 /// Handles card name autocompletion

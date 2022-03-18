@@ -11,8 +11,5 @@ interface IScryfallCard : IScryfallError, IScryfallObject
     internal string? Mana_Cost { get; set; }
     internal string? Oracle_Text { get; set; }
 
-    internal bool IsTransform => this.Layout == "transform";
-    internal bool IsModalDfc => this.Layout == "modal_dfc";
-    internal bool IsDoubleFacedToken => this.Layout == "double_faced_token";
-    internal int FaceCount => 1 + Convert.ToInt16(this.IsTransform || this.IsModalDfc || this.IsDoubleFacedToken);
+    internal int FaceCount => this.Card_Faces?.Length ?? 1;
 }
